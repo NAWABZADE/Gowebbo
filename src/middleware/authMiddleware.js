@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { getDbConnection } = require("../config/db");
+require("dotenv").config();
 
 exports.authenticate = async (req, res, next) => {
   // ✅ Get the token from Authorization header
@@ -20,4 +21,22 @@ exports.authenticate = async (req, res, next) => {
   req.practiceDb = await getDbConnection(decoded.database_name);
 
   return next();
+};
+
+
+exports.basicAuth = async (req, res, next) => {
+  if (!req.headers.authorization || req.headers.authorization.indexOf('Basic ') === -1) {
+      return res.json({ success: false, status_code:401, message: 'Basic auth is required!' })
+  }
+
+  const base64Credentials = req.headers.authorization.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+  const [username, password] = credentials.split(':');
+
+  if (username === process.env.ADMIN_USER_NAME && password === process.env.ADMIN_PASSWORD) {
+      next();
+  }
+  else {
+      return res.json({ success: false, status_code: 401, message: 'Validation failed fro basic auth!' })
+  }
 };

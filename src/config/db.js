@@ -8,6 +8,9 @@ const masterPool = new Pool({
   database: process.env.DB_NAME, // Master DB
   password: process.env.DB_PASS,
   port: process.env.DB_PORT,
+  ssl: {
+    rejectUnauthorized: false, // Allow self-signed certificates
+  },
 });
 
 // Store connections for practice databases
@@ -21,6 +24,9 @@ async function getDbConnection(practiceDbName) {
       database: practiceDbName,
       password: process.env.DB_PASS,
       port: process.env.DB_PORT,
+      ssl: {
+        rejectUnauthorized: false, // Allow self-signed certificates
+      },
     });
   }
   return dbPools[practiceDbName];

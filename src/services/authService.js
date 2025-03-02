@@ -33,13 +33,18 @@ exports.signup = async ({ name, email, password }) => {
 
         // ✅ Create `patients` table
         await practiceDb.query(`
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+        
             CREATE TABLE patients (
-                id SERIAL PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                 name TEXT NOT NULL,
+                mobile TEXT NOT NULL,
                 age INTEGER NOT NULL,
+                is_deleted SMALLINT DEFAULT 0 CHECK (is_deleted IN (0, 1)),
                 created_at TIMESTAMP DEFAULT NOW()
             )
         `);
+
         await emailQueue.add("sendWelcomeEmail", { email, name });
 
         return { success: true, status: 201, message: "Practice registered successfully!", database: databaseName };

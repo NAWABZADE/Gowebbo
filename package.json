@@ -1,9 +1,10 @@
 {
-  "name": "shubham_singh",
+  "name": "gowebbo",
   "version": "1.0.0",
-  "main": "user-mig.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon start src/app.js",
+    "start:queue":"nodemon start src/emailWorker.js"
   },
   "keywords": [],
   "author": "",

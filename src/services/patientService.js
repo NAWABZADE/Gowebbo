@@ -1,11 +1,9 @@
-exports.addPatient = async (practiceDb, { name, age }) => {
-    // ✅ Validate input fields
+exports.addPatient = async (practiceDb, { name, age, mobile }) => {
     if (!name || !age) {
         return { success: false, status: 400, message: "Name and age are required." };
     }
 
-    // ✅ Insert patient data
-    const result = await practiceDb.query("INSERT INTO patients (name, age) VALUES ($1, $2)", [name, age]);
+    const result = await practiceDb.query("INSERT INTO patients (name, age,mobile) VALUES ($1, $2,$3)", [name, age, mobile]);
 
     if (result) {
         return { success: true, status: 201, message: "Patient added successfully!" };
@@ -16,47 +14,34 @@ exports.addPatient = async (practiceDb, { name, age }) => {
 
 
 exports.getPatients = async (practiceDb) => {
-    const { rows } = await practiceDb.query("SELECT * FROM patients");
+    const { rows } = await practiceDb.query("SELECT * FROM patients WHERE is_deleted = 0");
 
-    if (rows) {
-        let result = {};
-        result.data = rows;
-
-        // ✅ Check if any patients exist
-        if (rows.length > 0) {
-            return { success: true, status: 200, message: "Patients fetched successfully!", result: result };
-        }
-
-        return { success: true, status: 204, message: "No patients found.", result: result };
+    if (rows.length > 0) {
+        return { success: true, status: 200, message: "Patients fetched successfully!", result: rows };
     }
 
-    return { success: false, status: 500, message: "Failed to retrieve patients.", result: {} };
+    return { success: true, status: 404, message: "No active patients found. Either no patients exist or all have been deleted.", result: {} };
 };
+
 
 
 
 exports.deletePatient = async (practiceDb, patientId) => {
-    // ✅ Validate ID
     if (!patientId) {
         return { success: false, status: 400, message: "Patient ID is required.", result: {} };
     }
 
-    // ✅ Delete patient
-    const result = await practiceDb.query("DELETE FROM patients WHERE id = $1 RETURNING *", [patientId]);
+    const result = await practiceDb.query(
+        "UPDATE patients SET is_deleted = 1 WHERE id = $1 AND is_deleted = 0 RETURNING *",
+        [patientId]
+    );
 
-    if (result) {
-        let responseResult = {};
-        responseResult.data = result.rows;
-
-        // ✅ Check if the patient was deleted (i.e., rowCount > 0)
-        if (result.rowCount > 0) {
-            return { success: 1, status: 200, message: "Patient deleted successfully!", result: responseResult };
-        }
-
-        return { success: true, status: 404, message: "Patient not found or already deleted.", result: responseResult };
+    if (result.rowCount > 0) {
+        return { success: 1, status: 200, message: "Patient marked as deleted successfully!" };
     }
 
-    return { success: false, status: 500, message: "Failed to delete patient.", result: {} };
+    return { success: false, status: 404, message: "Patient not found or already deleted." };
 };
+
 
 
