@@ -3,25 +3,30 @@ const { getDbConnection } = require("../config/db");
 require("dotenv").config();
 
 exports.authenticate = async (req, res, next) => {
-  // ✅ Get the token from Authorization header
-  const token = req.headers.authorization?.split(" ")[1];
+    try {
+        //  Get the token from Authorization header
+        const token = req.headers.authorization?.split(" ")[1];
 
-  // ✅ Check if token exists
-  if (!token) {
-      return res.status(401).json({ success: false, status: 401, message: "Unauthorized: Token is missing." });
-  }
+        // Check if token exists
+        if (!token) {
+            return res.status(401).json({ success: false, status: 401, message: "Unauthorized: Token is missing." });
+        }
 
-  // ✅ Verify token
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  if (!decoded) {
-      return res.status(403).json({ success: false, status: 403, message: "Forbidden: Invalid token." });
-  }
+        //  Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  // ✅ Attach database connection to the request
-  req.practiceDb = await getDbConnection(decoded.database_name);
+        //  Attach database connection to the request
+        req.practiceDb = await getDbConnection(decoded.database_name);
 
-  return next();
+        return next();
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({ success: false, status: 401, message: "Unauthorized: Token has expired." });
+        }
+        return res.status(403).json({ success: false, status: 403, message: "Forbidden: Invalid token." });
+    }
 };
+
 
 
 exports.basicAuth = async (req, res, next) => {

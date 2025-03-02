@@ -4,7 +4,6 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 
-// ✅ Fix: Explicitly set `maxRetriesPerRequest: null`
 const connection = new Redis({
   host: process.env.REDIS_HOST || "127.0.0.1",
   port: process.env.REDIS_PORT || 6379,

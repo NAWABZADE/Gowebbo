@@ -6,32 +6,30 @@ const { emailQueue } = require("../helper/queue");
 
 exports.signup = async ({ name, email, password }) => {
     try {
-        // ✅ Validate input fields
         if (!name || !email || !password) {
             return { success: false, status: 400, message: "All fields (name, email, password) are required." };
         }
 
-        // ✅ Check if email already exists
         const existingPractice = await masterPool.query("SELECT * FROM practices WHERE email = $1", [email]);
         if (existingPractice.rows.length > 0) {
             return { success: false, status: 400, message: "Email already registered." };
         }
 
-        // ✅ Hash password securely
+        //  Hash password securely
         const hashedPassword = await bcrypt.hash(password, 10);
         const databaseName = `practice_${Date.now()}_db`;
 
-        // ✅ Insert into master DB
+        //  Insert into master DB
         await masterPool.query(
             "INSERT INTO practices (name, email, password, database_name) VALUES ($1, $2, $3, $4)",
             [name, email, hashedPassword, databaseName]
         );
 
-        // ✅ Create practice-specific database
+        //  Create practice-specific database
         await masterPool.query(`CREATE DATABASE ${databaseName}`);
         const practiceDb = await getDbConnection(databaseName);
 
-        // ✅ Create `patients` table
+        //  Create `patients` table
         await practiceDb.query(`
             CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
         
@@ -57,12 +55,12 @@ exports.signup = async ({ name, email, password }) => {
 
 exports.login = async ({ email, password }) => {
     try {
-        // ✅ Validate input fields
+        //  Validate input fields
         if (!email || !password) {
             return { success: false, status: 400, message: "Email and password are required." };
         }
 
-        // ✅ Check if practice exists
+        // Check if practice exists
         const { rows } = await masterPool.query("SELECT * FROM practices WHERE email = $1", [email]);
         if (!rows.length) {
             return { success: false, status: 401, message: "Invalid email or password." };
