@@ -48,17 +48,29 @@ Create a `.env` file in the root directory and add the following details:
 
 PORT=5000
 DB_HOST=your_database_host
+
 DB_USER=postgres
+
 DB_PASS=your_postgres_password
+
 DB_NAME=gowebbo   
+
 DB_PORT=5432
+
 JWT_SECRET=your_secret_key
+
 EMAIL_USER=your_email_user (from)
+
 EMAIL_PASS=your_email_password (google app password for send email)
+
 TOKEN_EXPIRE_IN = 1hr
+
 ADMIN_USER_NAME= admin_user_name
+
 ADMIN_PASSWORD = admin_password
+
 REDIS_HOST = 127.0.0.1
+
 REDIS_PORT =6379
 
 ### **5. Run server**
